@@ -124,6 +124,25 @@ class BaseTrainer(ABC):
 
     # ------------------------------------------------------------------------- #
 
+
+    def make_json_safe(self, val):
+        import json
+        try:
+            json.dumps(val)
+            return val
+        except (TypeError, OverflowError, ValueError):
+            return str(val)
+
+
+
+
+
+
+
+
+
+
+
     def train(self, num_rounds: int, save_on_end: bool = True, **kwargs) -> DataFrame:
         if kwargs.get("checkpoint", None) is not None:
             self.load(kwargs["checkpoint"])
@@ -153,6 +172,12 @@ class BaseTrainer(ABC):
         if save_on_end:
             path = os.path.join(self.out_data_dir, self.get_filename())
             try:
+
+
+                for col in dataframe.columns:
+                    dataframe[col] = dataframe[col].apply(self.make_json_safe)
+                    
+                    
                 dataframe.to_csv(f"{path}.csv")
                 dataframe.to_excel(f"{path}.xlsx")
                 dataframe.to_json(f"{path}.json")
